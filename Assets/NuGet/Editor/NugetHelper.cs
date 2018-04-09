@@ -93,9 +93,9 @@
             {
                 return;
             }
-            
+
 #if UNITY_5_6_OR_NEWER
-            DotNetVersion = PlayerSettings.GetApiCompatibilityLevel(BuildTargetGroup.Unknown); 
+            DotNetVersion = PlayerSettings.GetApiCompatibilityLevel(BuildTargetGroup.Unknown);
 #else
             DotNetVersion = PlayerSettings.apiCompatibilityLevel;
 #endif
@@ -307,7 +307,7 @@
             if (Directory.Exists(packageInstallDirectory + "/lib"))
             {
                 int intDotNetVersion = (int)DotNetVersion; // c
-                //bool using46 = DotNetVersion == ApiCompatibilityLevel.NET_4_6; // NET_4_6 option was added in Unity 5.6
+                                                           //bool using46 = DotNetVersion == ApiCompatibilityLevel.NET_4_6; // NET_4_6 option was added in Unity 5.6
                 bool using46 = intDotNetVersion == 3; // NET_4_6 = 3 in Unity 5.6 and Unity 2017.1 - use the hard-coded int value to ensure it works in earlier versions of Unity
                 var selectedDirectories = new List<string>();
 
@@ -1042,19 +1042,18 @@
                 PackagesConfigFile.AddPackage(package);
                 PackagesConfigFile.Save(PackagesConfigFilePath);
 
-                string cachedPackagePath = Path.Combine(PackOutputDirectory, string.Format("./{0}.{1}.nupkg", package.Id, package.Version));
-                if (NugetConfigFile.InstallFromCache && File.Exists(cachedPackagePath))
+                string cachedPackagePath = Path.Combine(PackOutputDirectory, string.Format("./{0}.{1}.nupkg", package.Id, package.Version)); // path to the cached package
+                if (NugetConfigFile.InstallFromCache && File.Exists(cachedPackagePath)) // if should instally from cache and there is a cached package
                 {
                     LogVerbose("Cached package found for {0} {1}", package.Id, package.Version);
                 }
-                else
+                else // should not install from cache OR the package is not cached
                 {
                     if (package.PackageSource.IsLocalPath)
                     {
-                        LogVerbose("Caching local package {0} {1}", package.Id, package.Version);
+                        LogVerbose("Caching local package; ID: {0} Version: {1}; Package Source: {2};", package.Id, package.Version, package.PackageSource.ExpandedPath);
 
-                        // copy the .nupkg from the local path to the cache
-                        File.Copy(Path.Combine(package.PackageSource.ExpandedPath, string.Format("./{0}.{1}.nupkg", package.Id, package.Version)), cachedPackagePath, true);
+                        File.Copy(package.PathLocalGet(), cachedPackagePath, true); // copy the .nupkg from the local path to the cache
                     }
                     else
                     {
@@ -1088,7 +1087,7 @@
 
                 if (File.Exists(cachedPackagePath))
                 {
-                    string baseDirectory = Path.Combine(NugetConfigFile.RepositoryPath, string.Format("{0}.{1}", package.Id, package.Version));
+                    string baseDirectory = Path.Combine(NugetConfigFile.RepositoryPath, string.Format("{0}.{1}", package.Id, package.Version)); // target directory
 
                     // unzip the package
                     using (ZipFile zip = ZipFile.Read(cachedPackagePath))
@@ -1202,6 +1201,7 @@
                 {
                     if (package != null)
                     {
+
                         EditorUtility.DisplayProgressBar("Restoring NuGet Packages", string.Format("Restoring {0} {1}", package.Id, package.Version), currentProgress);
 
                         if (!IsInstalled(package))
