@@ -348,7 +348,7 @@ namespace NugetForUnity
        <add key=""All"" value=""(Aggregate source)"" />
     </activePackageSource>
     <config>
-       <add key=""repositoryPath"" value=""./Packages"" />
+       <add key=""repositoryPath"" value=""./NuGetForUnityEX/Packages"" />
        <add key=""DefaultPushSource"" value=""http://www.nuget.org/api/v2/"" />
        <add key=""RestoreOnLoad"" value=""false"" />
     </config>

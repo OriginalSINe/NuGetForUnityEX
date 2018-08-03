@@ -24,7 +24,10 @@
   {
     public const String TITLE_PRODUCT = "NuGetForUnityEX";
 
-    static public readonly String PATH_PACKAGES = String.Format("../{0}/Packages", TITLE_PRODUCT);
+    /// <summary>
+    /// Packages folder to be combined to be outside of the Assets folder;
+    /// </summary>
+    static public readonly String PATH_UP_PACKAGES = String.Format("../{0}/Packages", TITLE_PRODUCT);
 
     /// <summary>
     /// The path to the nuget.config file.
@@ -190,7 +193,7 @@
     private static void RunNugetProcess(string arguments, bool logOuput = true)
     {
       // Try to find any nuget.exe in the package tools installation location
-      string toolsPackagesFolder = Path.Combine(Application.dataPath, "../Packages");
+      string toolsPackagesFolder = Path.Combine(Application.dataPath, PATH_UP_PACKAGES);
 
       // create the folder to prevent an exception when getting the files
       Directory.CreateDirectory(toolsPackagesFolder);
@@ -452,7 +455,7 @@
       if (Directory.Exists(packageInstallDirectory + "/tools"))
       {
         // Move the tools folder outside of the Unity Assets folder
-        string toolsInstallDirectory = Path.Combine(Application.dataPath, string.Format("{0}/{1}.{2}/tools", PATH_PACKAGES, package.Id, package.Version));
+        string toolsInstallDirectory = Path.Combine(Application.dataPath, string.Format("{0}/{1}.{2}/tools", PATH_UP_PACKAGES, package.Id, package.Version));
 
         LogVerbose("Moving {0} to {1}", packageInstallDirectory + "/tools", toolsInstallDirectory);
 
@@ -708,7 +711,7 @@
       string metaFile = Path.Combine(ConfigFileNuget.RepositoryPath, string.Format("{0}.{1}.meta", package.Id, package.Version));
       DeleteFile(metaFile);
 
-      string toolsInstallDirectory = Path.Combine(Application.dataPath, string.Format("{0}/{1}.{2}", PATH_PACKAGES, package.Id, package.Version));
+      string toolsInstallDirectory = Path.Combine(Application.dataPath, string.Format("{0}/{1}.{2}", PATH_UP_PACKAGES, package.Id, package.Version));
       DeleteDirectory(toolsInstallDirectory);
 
       installedPackages.Remove(package.Id);
