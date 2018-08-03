@@ -29,12 +29,12 @@
     /// <summary>
     /// The path to the nuget.config file.
     /// </summary>
-    public static readonly string NugetConfigFilePath = Path.Combine(Application.dataPath, String.Format("./{0}/NuGet.config", TITLE_PRODUCT));
+    public static readonly string ConfigFileNugetPath = Path.Combine(Application.dataPath, String.Format("./{0}/NuGet.config", TITLE_PRODUCT));
 
     /// <summary>
     /// The path to the packages.config file.
     /// </summary>
-    private static readonly string PackagesConfigFilePath = Path.Combine(Application.dataPath, String.Format("./{0}/packages.config", TITLE_PRODUCT));
+    private static readonly string ConfigFilePackagesPath = Path.Combine(Application.dataPath, String.Format("./{0}/packages.config", TITLE_PRODUCT));
 
     /// <summary>
     /// The path where to put created (packed) and downloaded (not installed yet) .nupkg files.
@@ -49,26 +49,26 @@
     /// <summary>
     /// The loaded NuGet.config file that holds the settings for NuGet.
     /// </summary>
-    public static NugetConfigFile NugetConfigFile { get; private set; }
+    public static ConfigFileNuget ConfigFileNuget { get; private set; }
 
     /// <summary>
     /// Backing field for the packages.config file.
     /// </summary>
-    private static PackagesConfigFile packagesConfigFile;
+    private static ConfigFilePackages configFilePackages;
 
     /// <summary>
     /// Gets the loaded packages.config file that hold the dependencies for the project.
     /// </summary>
-    public static PackagesConfigFile PackagesConfigFile
+    public static ConfigFilePackages ConfigFilePackages
     {
       get
       {
-        if (packagesConfigFile == null)
+        if (configFilePackages == null)
         {
-          packagesConfigFile = PackagesConfigFile.Load(PackagesConfigFilePath);
+          configFilePackages = ConfigFilePackages.Load(ConfigFilePackagesPath);
         }
 
-        return packagesConfigFile;
+        return configFilePackages;
       }
     }
 
@@ -105,7 +105,7 @@
 #endif
 
       // Load the NuGet.config file
-      LoadNugetConfigFile();
+      LoadConfigFileNuget();
 
       // create the nupkgs directory, if it doesn't exist
       if (!Directory.Exists(PackOutputDirectory))
@@ -113,24 +113,27 @@
         Directory.CreateDirectory(PackOutputDirectory);
       }
 
-      // restore packages - this will be called EVERY time the project is loaded or a code-file changes
-      Restore();
+      if(NugetHelper.ConfigFileNuget.RestoreOnLoad)
+      {
+        // restore packages
+        NugetHelper.Restore();
+      }
     }
 
     /// <summary>
     /// Loads the NuGet.config file.
     /// </summary>
-    public static void LoadNugetConfigFile()
+    public static void LoadConfigFileNuget()
     {
-      if (File.Exists(NugetConfigFilePath))
+      if (File.Exists(ConfigFileNugetPath))
       {
-        NugetConfigFile = NugetConfigFile.Load(NugetConfigFilePath);
+        ConfigFileNuget = ConfigFileNuget.Load(ConfigFileNugetPath);
       }
       else
       {
-        Debug.LogFormat("No NuGet.config file found. Creating default at {0}", NugetConfigFilePath);
+        Debug.LogFormat("No NuGet.config file found. Creating default at {0}", ConfigFileNugetPath);
 
-        NugetConfigFile = NugetConfigFile.CreateDefaultFile(NugetConfigFilePath);
+        ConfigFileNuget = ConfigFileNuget.CreateDefaultFile(ConfigFileNugetPath);
         AssetDatabase.Refresh();
       }
 
@@ -158,7 +161,7 @@
         if (arg == "-Source")
         {
           // if the source is being forced, don't install packages from the cache
-          NugetConfigFile.InstallFromCache = false;
+          ConfigFileNuget.InstallFromCache = false;
           readingSources = true;
           useCommandLineSources = true;
         }
@@ -167,13 +170,13 @@
       // if there are not command line overrides, use the NuGet.config package sources
       if (!useCommandLineSources)
       {
-        if (NugetConfigFile.ActivePackageSource.ExpandedPath == "(Aggregate source)")
+        if (ConfigFileNuget.ActivePackageSource.ExpandedPath == "(Aggregate source)")
         {
-          packageSources.AddRange(NugetConfigFile.PackageSources);
+          packageSources.AddRange(ConfigFileNuget.PackageSources);
         }
         else
         {
-          packageSources.Add(NugetConfigFile.ActivePackageSource);
+          packageSources.Add(ConfigFileNuget.ActivePackageSource);
         }
       }
     }
@@ -281,7 +284,7 @@
     /// <param name="package">The NugetPackage to clean.</param>
     private static void Clean(NugetPackageIdentifier package)
     {
-      string packageInstallDirectory = Path.Combine(NugetConfigFile.RepositoryPath, string.Format("{0}.{1}", package.Id, package.Version));
+      string packageInstallDirectory = Path.Combine(ConfigFileNuget.RepositoryPath, string.Format("{0}.{1}", package.Id, package.Version));
 
       LogVerbose("Cleaning {0}", packageInstallDirectory);
 
@@ -611,7 +614,7 @@
         }
       }
 
-      string arguments = string.Format("push \"{0}\" {1} -configfile \"{2}\"", packagePath, apiKey, NugetConfigFilePath);
+      string arguments = string.Format("push \"{0}\" {1} -configfile \"{2}\"", packagePath, apiKey, ConfigFileNugetPath);
 
       RunNugetProcess(arguments);
     }
@@ -696,13 +699,13 @@
       LogVerbose("Uninstalling: {0} {1}", package.Id, package.Version);
 
       // update the package.config file
-      PackagesConfigFile.RemovePackage(package);
-      PackagesConfigFile.Save(PackagesConfigFilePath);
+      ConfigFilePackages.RemovePackage(package);
+      ConfigFilePackages.Save(ConfigFilePackagesPath);
 
-      string packageInstallDirectory = Path.Combine(NugetConfigFile.RepositoryPath, string.Format("{0}.{1}", package.Id, package.Version));
+      string packageInstallDirectory = Path.Combine(ConfigFileNuget.RepositoryPath, string.Format("{0}.{1}", package.Id, package.Version));
       DeleteDirectory(packageInstallDirectory);
 
-      string metaFile = Path.Combine(NugetConfigFile.RepositoryPath, string.Format("{0}.{1}.meta", package.Id, package.Version));
+      string metaFile = Path.Combine(ConfigFileNuget.RepositoryPath, string.Format("{0}.{1}.meta", package.Id, package.Version));
       DeleteFile(metaFile);
 
       string toolsInstallDirectory = Path.Combine(Application.dataPath, string.Format("{0}/{1}.{2}", PATH_PACKAGES, package.Id, package.Version));
@@ -765,7 +768,7 @@
     /// <returns>A dictionary of installed <see cref="NugetPackage"/>s.</returns>
     public static Dictionary<string, NugetPackage> GetInstalledPackages()
     {
-      LoadNugetConfigFile();
+      LoadConfigFileNuget();
 
       Stopwatch stopwatch = new Stopwatch();
       stopwatch.Start();
@@ -773,10 +776,10 @@
       installedPackages.Clear();
 
       // loops through the packages that are actually installed in the project
-      if (Directory.Exists(NugetConfigFile.RepositoryPath))
+      if (Directory.Exists(ConfigFileNuget.RepositoryPath))
       {
         // a package that was installed via NuGet will have the .nupkg it came from inside the folder
-        string[] nupkgFiles = Directory.GetFiles(NugetConfigFile.RepositoryPath, "*.nupkg", SearchOption.AllDirectories);
+        string[] nupkgFiles = Directory.GetFiles(ConfigFileNuget.RepositoryPath, "*.nupkg", SearchOption.AllDirectories);
         foreach (string nupkgFile in nupkgFiles)
         {
           NugetPackage package = NugetPackage.FromNupkgFile(nupkgFile);
@@ -791,7 +794,7 @@
         }
 
         // if the source code & assets for a package are pulled directly into the project (ex: via a symlink/junction) it should have a .nuspec defining the package
-        string[] nuspecFiles = Directory.GetFiles(NugetConfigFile.RepositoryPath, "*.nuspec", SearchOption.AllDirectories);
+        string[] nuspecFiles = Directory.GetFiles(ConfigFileNuget.RepositoryPath, "*.nuspec", SearchOption.AllDirectories);
         foreach (string nuspecFile in nuspecFiles)
         {
           NugetPackage package = NugetPackage.FromNuspec(NuspecFile.Load(nuspecFile));
@@ -931,7 +934,7 @@
     {
       NugetPackage package = null;
 
-      if (NugetHelper.NugetConfigFile.InstallFromCache)
+      if (NugetHelper.ConfigFileNuget.InstallFromCache)
       {
         string cachedPackagePath = System.IO.Path.Combine(NugetHelper.PackOutputDirectory, string.Format("./{0}.{1}.nupkg", packageId.Id, packageId.Version));
 
@@ -1021,7 +1024,7 @@
     /// <param name="args">The arguments for the formattted message string.</param>
     public static void LogVerbose(string format, params object[] args)
     {
-      if (NugetConfigFile.Verbose)
+      if (ConfigFileNuget.Verbose)
       {
 #if UNITY_5_4_OR_NEWER
                 var stackTraceLogType = Application.GetStackTraceLogType(LogType.Log);
@@ -1089,11 +1092,11 @@
         }
 
         // update packages.config
-        PackagesConfigFile.AddPackage(package);
-        PackagesConfigFile.Save(PackagesConfigFilePath);
+        ConfigFilePackages.AddPackage(package);
+        ConfigFilePackages.Save(ConfigFilePackagesPath);
 
         string cachedPackagePath = Path.Combine(PackOutputDirectory, string.Format("./{0}.{1}.nupkg", package.Id, package.Version)); // path to the cached package
-        if (NugetConfigFile.InstallFromCache && File.Exists(cachedPackagePath)) // if should instally from cache and there is a cached package
+        if (ConfigFileNuget.InstallFromCache && File.Exists(cachedPackagePath)) // if should instally from cache and there is a cached package
         {
           LogVerbose("Cached package found for {0} {1}", package.Id, package.Version);
         }
@@ -1137,7 +1140,7 @@
 
         if (File.Exists(cachedPackagePath))
         {
-          string baseDirectory = Path.Combine(NugetConfigFile.RepositoryPath, string.Format("{0}.{1}", package.Id, package.Version)); // target directory
+          string baseDirectory = Path.Combine(ConfigFileNuget.RepositoryPath, string.Format("{0}.{1}", package.Id, package.Version)); // target directory
 
           // unzip the package
           using (ZipFile zip = ZipFile.Read(cachedPackagePath))
@@ -1145,7 +1148,7 @@
             foreach (ZipEntry entry in zip)
             {
               entry.Extract(baseDirectory, ExtractExistingFileAction.OverwriteSilently);
-              if (NugetConfigFile.ReadOnlyPackageFiles)
+              if (ConfigFileNuget.ReadOnlyPackageFiles)
               {
                 FileInfo extractedFile = new FileInfo(Path.Combine(baseDirectory, entry.FileName));
                 extractedFile.Attributes |= FileAttributes.ReadOnly;
@@ -1154,7 +1157,7 @@
           }
 
           // copy the .nupkg inside the Unity project
-          File.Copy(cachedPackagePath, Path.Combine(NugetConfigFile.RepositoryPath, string.Format("{0}.{1}/{0}.{1}.nupkg", package.Id, package.Version)), true);
+          File.Copy(cachedPackagePath, Path.Combine(ConfigFileNuget.RepositoryPath, string.Format("{0}.{1}/{0}.{1}.nupkg", package.Id, package.Version)), true);
         }
         else
         {
@@ -1239,11 +1242,11 @@
 
       try
       {
-        float progressStep = 1.0f / PackagesConfigFile.Packages.Count;
+        float progressStep = 1.0f / ConfigFilePackages.Packages.Count;
         float currentProgress = 0;
 
         // copy the list since the InstallIdentifier operation below changes the actual installed packages list
-        var packagesToInstall = new List<NugetPackageIdentifier>(PackagesConfigFile.Packages);
+        var packagesToInstall = new List<NugetPackageIdentifier>(ConfigFilePackages.Packages);
 
         LogVerbose("Restoring {0} packages.", packagesToInstall.Count);
 
@@ -1346,6 +1349,6 @@
     /// Should ignore a dependancy?;
     /// </summary>
     static private bool ignoreDependancyShould(string packageID)
-    => NugetConfigFile.IgnoredDependencies.Contains(packageID);
+    => ConfigFileNuget.IgnoredDependencies.Contains(packageID);
   }
 }

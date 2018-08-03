@@ -312,7 +312,7 @@
             try
             {
                 // reload the NuGet.config file, in case it was changed after Unity opened, but before the manager window opened (now)
-                NugetHelper.LoadNugetConfigFile();
+                NugetHelper.LoadConfigFileNuget();
 
                 // if we are entering playmode, don't do anything
                 if (EditorApplication.isPlayingOrWillChangePlaymode)

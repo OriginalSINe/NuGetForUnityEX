@@ -26,16 +26,16 @@
         {
             EditorGUILayout.LabelField(string.Format("Version: {0}", NuGetForUnityVersion));
 
-            if (NugetHelper.NugetConfigFile == null)
+            if (NugetHelper.ConfigFileNuget == null)
             {
-                NugetHelper.LoadNugetConfigFile();
+                NugetHelper.LoadConfigFileNuget();
             }
 
-            NugetHelper.NugetConfigFile.InstallFromCache = EditorGUILayout.Toggle("Install From the Cache", NugetHelper.NugetConfigFile.InstallFromCache);
+            NugetHelper.ConfigFileNuget.InstallFromCache = EditorGUILayout.Toggle("Install From the Cache", NugetHelper.ConfigFileNuget.InstallFromCache);
 
-            NugetHelper.NugetConfigFile.ReadOnlyPackageFiles = EditorGUILayout.Toggle("Read-Only Package Files", NugetHelper.NugetConfigFile.ReadOnlyPackageFiles);
+            NugetHelper.ConfigFileNuget.ReadOnlyPackageFiles = EditorGUILayout.Toggle("Read-Only Package Files", NugetHelper.ConfigFileNuget.ReadOnlyPackageFiles);
 
-            NugetHelper.NugetConfigFile.Verbose = EditorGUILayout.Toggle("Use Verbose Logging", NugetHelper.NugetConfigFile.Verbose);
+            NugetHelper.ConfigFileNuget.Verbose = EditorGUILayout.Toggle("Use Verbose Logging", NugetHelper.ConfigFileNuget.Verbose);
 
             EditorGUILayout.LabelField("Package Sources:");
 
@@ -45,7 +45,7 @@
             NugetPackageSource sourceToMoveDown = null;
             NugetPackageSource sourceToRemove = null;
 
-            foreach (var source in NugetHelper.NugetConfigFile.PackageSources)
+            foreach (var source in NugetHelper.ConfigFileNuget.PackageSources)
             {
                 EditorGUILayout.BeginVertical();
                 {
@@ -104,40 +104,40 @@
 
             if (sourceToMoveUp != null)
             {
-                int index = NugetHelper.NugetConfigFile.PackageSources.IndexOf(sourceToMoveUp);
+                int index = NugetHelper.ConfigFileNuget.PackageSources.IndexOf(sourceToMoveUp);
                 if (index > 0)
                 {
-                    NugetHelper.NugetConfigFile.PackageSources[index] = NugetHelper.NugetConfigFile.PackageSources[index - 1];
-                    NugetHelper.NugetConfigFile.PackageSources[index - 1] = sourceToMoveUp;
+                    NugetHelper.ConfigFileNuget.PackageSources[index] = NugetHelper.ConfigFileNuget.PackageSources[index - 1];
+                    NugetHelper.ConfigFileNuget.PackageSources[index - 1] = sourceToMoveUp;
                 }
             }
 
             if (sourceToMoveDown != null)
             {
-                int index = NugetHelper.NugetConfigFile.PackageSources.IndexOf(sourceToMoveDown);
-                if (index < NugetHelper.NugetConfigFile.PackageSources.Count - 1)
+                int index = NugetHelper.ConfigFileNuget.PackageSources.IndexOf(sourceToMoveDown);
+                if (index < NugetHelper.ConfigFileNuget.PackageSources.Count - 1)
                 {
-                    NugetHelper.NugetConfigFile.PackageSources[index] = NugetHelper.NugetConfigFile.PackageSources[index + 1];
-                    NugetHelper.NugetConfigFile.PackageSources[index + 1] = sourceToMoveDown;
+                    NugetHelper.ConfigFileNuget.PackageSources[index] = NugetHelper.ConfigFileNuget.PackageSources[index + 1];
+                    NugetHelper.ConfigFileNuget.PackageSources[index + 1] = sourceToMoveDown;
                 }
             }
 
             if (sourceToRemove != null)
             {
-                NugetHelper.NugetConfigFile.PackageSources.Remove(sourceToRemove);
+                NugetHelper.ConfigFileNuget.PackageSources.Remove(sourceToRemove);
             }
 
             if (GUILayout.Button(string.Format("Add New Source")))
             {
-                NugetHelper.NugetConfigFile.PackageSources.Add(new NugetPackageSource("New Source", "source_path"));
+                NugetHelper.ConfigFileNuget.PackageSources.Add(new NugetPackageSource("New Source", "source_path"));
             }
 
             EditorGUILayout.EndScrollView();
 
             if (GUILayout.Button(string.Format("Save")))
             {
-                NugetHelper.NugetConfigFile.Save(NugetHelper.NugetConfigFilePath);
-                NugetHelper.LoadNugetConfigFile();
+                NugetHelper.ConfigFileNuget.Save(NugetHelper.ConfigFileNugetPath);
+                NugetHelper.LoadConfigFileNuget();
             }
         }
     }
