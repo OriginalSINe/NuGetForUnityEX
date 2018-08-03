@@ -147,7 +147,7 @@
         /// <summary>
         /// Displays the version number of NuGetForUnity.
         /// </summary>
-        [MenuItem("NuGet/Version " + NugetPreferences.NuGetForUnityVersion, false, 10)]
+        [MenuItem("NuGet/Version " + NugetPreferences.VERSION, false, 10)]
         protected static void DisplayVersion()
         {
             var assembly = System.Reflection.Assembly.GetAssembly(typeof(EditorWindow));
@@ -257,13 +257,13 @@
                     return;
                 }
 
-                NugetPackageIdentifier current = new NugetPackageIdentifier("NuGetForUnity", NugetPreferences.NuGetForUnityVersion);
+                NugetPackageIdentifier current = new NugetPackageIdentifier("NuGetForUnity", NugetPreferences.VERSION);
                 NugetPackageIdentifier latest = new NugetPackageIdentifier("NuGetForUnity", latestVersion);
                 if (current >= latest)
                 {
                     EditorUtility.DisplayDialog(
                             "No Updates Available",
-                            string.Format("Your version of NuGetForUnity is up to date.\nVersion {0}.", NugetPreferences.NuGetForUnityVersion),
+                            string.Format("Your version of NuGetForUnity is up to date.\nVersion {0}.", NugetPreferences.VERSION),
                             "OK");
                     return;
                 }
@@ -271,7 +271,7 @@
                 // New version is available. Give user options for installing it.
                 switch (EditorUtility.DisplayDialogComplex(
                         "Update Available",
-                        string.Format("Current Version: {0}\nLatest Version: {1}", NugetPreferences.NuGetForUnityVersion, latestVersion),
+                        string.Format("Current Version: {0}\nLatest Version: {1}", NugetPreferences.VERSION, latestVersion),
                         "Install Latest",
                         "Open Releases Page",
                         "Cancel"))

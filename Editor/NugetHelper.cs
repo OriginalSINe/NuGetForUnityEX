@@ -22,7 +22,7 @@
   [InitializeOnLoad]
   public static class NugetHelper
   {
-    public const String TITLE_PRODUCT = "NuGetForUnityEX";
+    public const String TITLE_PRODUCT = "NuGetForUnity";
 
     /// <summary>
     /// Packages folder to be combined to be outside of the Assets folder;

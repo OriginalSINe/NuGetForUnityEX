@@ -166,6 +166,19 @@ namespace NugetForUnity
       configuration.Add(activePackageSource);
       configuration.Add(config);
 
+      // saving ignored dependencies
+
+      XElement ignoredDependencies = new XElement("ignoredDependencies");
+
+      foreach (var iDependancyPackageID in IgnoredDependencies)
+      {
+        addElement = new XElement("add");
+        addElement.Add(new XAttribute("value", iDependancyPackageID));
+        ignoredDependencies.Add(addElement);
+      }
+
+      configuration.Add(ignoredDependencies);
+
       configFile.Add(configuration);
 
       // remove the read only flag on the file, if there is one.
@@ -178,17 +191,6 @@ namespace NugetForUnity
           attributes &= ~FileAttributes.ReadOnly;
           File.SetAttributes(filepath, attributes);
         }
-      }
-
-      // saving ignored dependencies
-
-      XElement ignoredDependencies = new XElement("ignoredDependencies");
-
-      foreach (var iDependancyPackageID in IgnoredDependencies)
-      {
-        addElement = new XElement("add");
-        addElement.Add(new XAttribute("value", iDependancyPackageID));
-        ignoredDependencies.Add(addElement);
       }
 
       configFile.Save(filepath);
@@ -348,7 +350,7 @@ namespace NugetForUnity
        <add key=""All"" value=""(Aggregate source)"" />
     </activePackageSource>
     <config>
-       <add key=""repositoryPath"" value=""./NuGetForUnityEX/Packages"" />
+       <add key=""repositoryPath"" value=""./NuGetForUnity/Packages"" />
        <add key=""DefaultPushSource"" value=""http://www.nuget.org/api/v2/"" />
        <add key=""RestoreOnLoad"" value=""false"" />
     </config>

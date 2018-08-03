@@ -11,7 +11,7 @@
         /// <summary>
         /// The current version of NuGet for Unity.
         /// </summary>
-        public const string NuGetForUnityVersion = "0.0.16";
+        public const string VERSION = "0.0.17-EX";
 
         /// <summary>
         /// The current position of the scroll bar in the GUI.
@@ -24,7 +24,7 @@
         [PreferenceItem("NuGet For Unity")]
         public static void PreferencesGUI()
         {
-            EditorGUILayout.LabelField(string.Format("Version: {0}", NuGetForUnityVersion));
+            EditorGUILayout.LabelField(string.Format("Version: {0}", VERSION));
 
             if (NugetHelper.ConfigFileNuget == null)
             {
