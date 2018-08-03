@@ -22,17 +22,19 @@
   [InitializeOnLoad]
   public static class NugetHelper
   {
-    static public readonly String PATH_PACKAGES = "../NuGetForUnityEX/Packages";
+    public const String TITLE_PRODUCT = "NuGetForUnityEX";
+
+    static public readonly String PATH_PACKAGES = String.Format("../{0}/Packages", TITLE_PRODUCT);
 
     /// <summary>
     /// The path to the nuget.config file.
     /// </summary>
-    public static readonly string NugetConfigFilePath = Path.Combine(Application.dataPath, "./NuGetForUnityEX/NuGet.config");
+    public static readonly string NugetConfigFilePath = Path.Combine(Application.dataPath, String.Format("./{0}/NuGet.config", TITLE_PRODUCT));
 
     /// <summary>
     /// The path to the packages.config file.
     /// </summary>
-    private static readonly string PackagesConfigFilePath = Path.Combine(Application.dataPath, "./NuGetForUnityEX/packages.config");
+    private static readonly string PackagesConfigFilePath = Path.Combine(Application.dataPath, String.Format("./{0}/packages.config", TITLE_PRODUCT));
 
     /// <summary>
     /// The path where to put created (packed) and downloaded (not installed yet) .nupkg files.

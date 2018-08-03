@@ -8,8 +8,7 @@ NuGetForUnity provides a visual editor window to see available packages on the s
 ![](screenshots/online.png?raw=true)
 
 # How do I install NuGetForUnity?
-Option 1: Install the provided Unity package into your Unity project.  Located [here](https://github.com/OriginalSINe/NuGetForUnity/releases).
-Option 2: Install this as a git submodule.
+Copy the "Editor" folder to your Unity project with the path Assets/NuGetForUnity/Editor
 
 # How do I use NuGetForUnity?
 To launch, select **NuGet For Unity → Manage NuGet Packages**
